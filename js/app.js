@@ -774,14 +774,14 @@
     $("#app").innerHTML = `
       <div class="topbar"><div class="container"><span>Part of the FSD Network</span><span class="net">${D.NETWORK.map((n) => `<a href="#about">${esc(n)}</a>`).join("")}</span></div></div>
       <header class="header"><div class="container">
-        <a class="logo" href="#home" aria-label="FSD Ethiopia home"><svg class="mark" viewBox="0 0 36 36" aria-hidden="true"><path d="M6 30 L18 6 L30 30 Z" fill="none" stroke="#8ed26d" stroke-width="3" stroke-linejoin="round"/><path d="M12 30 L18 18 L24 30" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg><span class="word">fsd ethiopia<small>Financial Sector Deepening</small></span></a>
+        <a class="logo" href="#home" aria-label="FSD Ethiopia home"><img class="logo-img" src="img/logo.png" alt="FSD Ethiopia" width="714" height="490"></a>
         <nav class="nav" aria-label="Primary" id="primary-nav">${NAV.map((n) => `<a href="#${n[0]}" data-nav="${n[0]}">${esc(n[1])}</a>`).join("")}</nav>
         <div class="header-actions"><button class="btn-search" data-open-search aria-label="Search the site"><span class="row" style="gap:8px">${ICON.search}<span class="lbl">Search the site…</span></span><kbd>/</kbd></button><button class="btn-menu" data-open-menu aria-label="Open menu" aria-expanded="false">${ICON.menu} Menu</button></div>
       </div></header>
       <main id="main" tabindex="-1"></main>
       <footer class="footer"><div class="container">
         <div class="cols">
-          <div><div class="logo" style="margin-bottom:12px"><span class="word" style="color:#fff">fsd ethiopia<small>Financial Sector Deepening</small></span></div><p style="max-width:40ch">Established in 2022, FSD Ethiopia is an agency that aims to support the development of accessible, inclusive, and sustainable financial markets for economic growth and human development.</p><p class="num" style="margin-top:12px">${esc(D.OFFICE.email)}<br>${esc(D.OFFICE.phone)}<br>${esc(D.OFFICE.hours)}</p></div>
+          <div><div class="logo" style="margin-bottom:12px"><img class="logo-img lg" src="img/logo.png" alt="FSD Ethiopia" width="714" height="490"></div><p style="max-width:40ch">Established in 2022, FSD Ethiopia is an agency that aims to support the development of accessible, inclusive, and sustainable financial markets for economic growth and human development.</p><p class="num" style="margin-top:12px">${esc(D.OFFICE.email)}<br>${esc(D.OFFICE.phone)}<br>${esc(D.OFFICE.hours)}</p></div>
           <div><h4>Explore</h4><a href="#research">Research &amp; Insights</a><a href="#data">Data &amp; Markets</a><a href="#impact">Impact &amp; Results</a><a href="#news">News</a><a href="#media">For journalists</a></div>
           <div><h4>Work With Us</h4><a href="#careers">Careers</a><a href="#careers">Consulting opportunities</a><a href="#procurement">Procurement &amp; Tenders</a><a href="#contact">Contact</a></div>
           <div><h4>Organisation</h4><a href="#about">Who we are</a><a href="#about">Board and team</a><a href="#about">Funders and network</a><a href="#system">Design system</a><a href="#admin">Staff review console</a></div>
