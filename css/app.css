@@ -153,7 +153,7 @@ hr.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
 .topbar a:hover { color: #fff; }
 .topbar .net { display: flex; gap: var(--s-4); flex-wrap: wrap; }
 .header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: var(--teal-700); color: #fff; border-bottom: 1px solid var(--teal-800); }
-.header .container { display: flex; align-items: center; gap: var(--s-4); min-height: 68px; }
+.header .container { display: flex; align-items: center; gap: var(--s-4); min-height: 76px; }
 .logo { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; margin-right: auto; }
 .logo .mark { width: 36px; height: 36px; flex: none; }
 .logo .word { font-family: var(--font-display); font-size: var(--fs-20); font-weight: 600; letter-spacing: 0.005em; line-height: 1; }
@@ -702,6 +702,6 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-14); min
 .queue .qh .tiny { overflow: hidden; text-overflow: ellipsis; }
 
 /* official logo */
-.logo .logo-img { height: 52px; width: auto; display: block; }
-.logo .logo-img.lg { height: 76px; }
-@media (max-width: 480px) { .logo .logo-img { height: 46px; } }
+.logo .logo-img { height: 64px; width: auto; display: block; }
+.logo .logo-img.lg { height: 88px; }
+@media (max-width: 480px) { .logo .logo-img { height: 56px; } }
