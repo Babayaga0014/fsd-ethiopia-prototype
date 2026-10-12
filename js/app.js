@@ -72,13 +72,13 @@
 
   function pubRow(p, opts) {
     opts = opts || {};
+    const extra = p.topics.length > 2 ? `<span class="tag-more" title="${esc(p.topics.slice(2).join(", "))}">+${p.topics.length - 2} more</span>` : "";
     return `<article class="pub-row">
       <a class="cover ${p.cover ? "" : "blank"}" href="#report-${p.id}" tabindex="-1" aria-hidden="true">${p.cover ? `<img src="${p.cover}" alt="">` : esc(p.type)}</a>
       <div>
-        <div class="meta"><span class="chip type">${esc(p.type)}</span><span class="num">${esc(p.date)}</span><span>${esc((p.authors || []).join(", "))}</span>${p.origin === "partner" ? '<span class="chip outline">Partner document</span>' : ""}</div>
+        <div class="meta"><span class="kind">${esc(p.type)}</span><span class="num">${esc(p.date)}</span><span>${esc((p.authors || []).join(", "))}</span>${p.origin === "partner" ? '<span>Partner document</span>' : ""}</div>
         <h3><a href="#report-${p.id}">${esc(p.title)}</a></h3>
-        ${opts.compact ? "" : `<p class="summary">${esc(p.summary)}</p><div class="tags">${p.topics.map((t) => `<span class="chip">${esc(t)}</span>`).join("")}<span class="chip outline">${esc(pillarName(p.pillar))}</span></div>`}
-        ${opts.compact ? "" : `<div class="actions"><a class="textlink" href="#report-${p.id}">Read summary ${ICON.arrow}</a><a class="textlink" href="#report-${p.id}">${ICON.down} PDF</a></div>`}
+        ${opts.compact ? "" : `<p class="summary">${esc(p.summary)}</p><div class="row between" style="margin-top:10px;gap:8px"><div class="tags">${p.topics.slice(0, 2).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}${extra}</div><div class="actions"><a class="textlink" href="#report-${p.id}">Read summary ${ICON.arrow}</a><a class="textlink quiet" href="#report-${p.id}">${ICON.down} PDF</a></div></div>`}
       </div></article>`;
   }
 
@@ -151,122 +151,92 @@
   views.home = () => {
     const openT = D.TENDERS.filter((t) => t.status === "open");
     const featured = byId(D.PUBS, D.REPORT.id);
-    const latest = D.PUBS.filter((p) => p.origin === "fsd").slice(0, 3);
-    const later = D.PUBS.filter((p) => p.origin === "fsd").slice(3, 7);
+    const recent = D.PUBS.filter((p) => p.origin === "fsd" && p.id !== featured.id).slice(0, 2);
+    const lead = D.STATS[0];
     return `
     <section class="hero">
       <div class="container hero-grid">
         <div class="hero-text">
-          <p class="eyebrow" style="color:var(--on-teal-muted)">Financial Sector Deepening Ethiopia · Established 2022</p>
+          <p class="eyebrow" style="color:var(--on-teal-muted)">Financial Sector Deepening Ethiopia</p>
           <h1>Making Ethiopia's financial system work for more people and more businesses.</h1>
-          <p class="lede">FSD Ethiopia is an independent development agency. We study how Ethiopia's financial sector works, test solutions with banks, insurers, regulators and the new capital market, and publish what we learn. <strong>Funded by the Bill &amp; Melinda Gates Foundation and UK International Development. Incubated by FSD Africa.</strong></p>
-          <div class="cta"><a class="btn btn-inverse" href="#research">Explore research</a><a class="btn btn-outline-inverse" href="#data">See the data</a><a class="btn btn-outline-inverse" href="#workwithus">Open opportunities</a></div>
+          <p class="lede">An independent development agency, established in 2022. We study how Ethiopia's financial sector works, test solutions with banks, insurers, regulators and the capital market, and publish what we learn.</p>
+          <div class="cta"><a class="btn btn-inverse" href="#work">Explore our work</a><a class="btn btn-outline-inverse" href="#research">Research &amp; Insights</a></div>
         </div>
         <div class="photo"><img src="img/hero.jpg" alt="A shopkeeper counts Ethiopian birr notes at the doorway of her shop while a customer waits."><span class="cap">Photo: FSD Ethiopia</span></div>
         <div class="hero-pillars" aria-label="Our three areas of work">
-          <p class="eyebrow" style="color:var(--on-teal-muted);grid-column:1/-1">Our work · three areas</p>
-          ${Object.values(D.PILLARS).map((p) => `<a href="#pillar-${p.id}"><span class="t">${esc(p.name)}</span><span class="d">${esc(p.brief)}</span><span class="f"><strong>${esc(p.fact.value)}</strong> ${esc(p.fact.label)}</span></a>`).join("")}
-        </div>
-      </div>
-    </section>
-
-    <section class="section tight band">
-      <div class="container first-band">
-        <div>
-          <div class="row between"><p class="eyebrow brand">Research &amp; Insights</p><a class="textlink small" href="#research">All ${D.PUBS.length} publications ${ICON.arrow}</a></div>
-          <div class="list-divided">${latest.map((p) => `<a class="mini-pub" href="#report-${p.id}"><span class="t">${esc(p.title)}</span><span class="m"><span class="chip type">${esc(p.type)}</span>${esc(p.date)} · ${esc((p.authors || []).join(", "))}</span></a>`).join("")}</div>
-        </div>
-        <div>
-          <div class="row between"><p class="eyebrow brand">Data &amp; Markets</p><a class="textlink small" href="#data">All indicators ${ICON.arrow}</a></div>
-          <div class="list-divided">${D.STATS.slice(0, 3).map((s) => `<div class="mini-stat"><span class="v">${esc(s.value)}</span><span><span class="l">${esc(s.label)}</span><span class="s">${esc(s.source)}</span></span></div>`).join("")}</div>
-        </div>
-        <div>
-          <div class="row between"><p class="eyebrow brand">Impact &amp; current work</p><a class="textlink small" href="#impact">All results ${ICON.arrow}</a></div>
-          <div class="list-divided">${[D.IMPACT[2], D.IMPACT[0]].map((i) => `<a class="mini-impact" href="#impact"><span class="status ${i.evidence[0].ok ? "good" : "warn"}">${i.evidence[0].ok ? "Sourced" : "Placeholder"}</span><span class="t">${esc(i.outcome)}</span><span class="s">${esc(i.evidence[0].t)}</span></a>`).join("")}<a class="mini-impact" href="#procurement"><span class="status warn">Closing soon</span><span class="t">${openT.length} open tenders, next deadline ${fmtDate(openT[0].deadline)}</span><span class="s">${esc(openT[0].title)}</span></a></div>
+          ${Object.values(D.PILLARS).map((p) => `<a href="#pillar-${p.id}"><span class="t">${esc(p.name)}</span><span class="d">${esc(p.brief)}</span><span class="f">${esc(p.fact.value)} ${esc(p.fact.label)} ${ICON.arrow}</span></a>`).join("")}
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        ${sectionHead("Featured insight", "Where Ethiopia's climate finance comes from, and where it falls short", "The first national mapping of climate finance flows, published with Climate Policy Initiative in April 2026.")}
-        <div class="feature">
-          <div class="body">
-            <p class="eyebrow">Report · April 2026 · FSD Ethiopia and Climate Policy Initiative</p>
-            <h2><a href="#report-${featured.id}" style="color:inherit;text-decoration:none">${esc(featured.title)}</a></h2>
-            <p>${esc(D.REPORT.execSummary[0])}</p>
-            <div class="row" style="gap:8px"><span class="eyebrow" style="font-size:11px">Key findings</span>${illus("Illustrative until approved figures are supplied")}</div>
-            <ul class="findings on-dark" style="padding-left:0;gap:8px">${D.REPORT.findings.slice(0, 3).map((f) => `<li style="grid-template-columns:28px minmax(0,1fr);padding-top:8px;border-top-color:rgba(255,255,255,0.15)"><span style="color:#fff">${esc(f.h)}</span></li>`).join("")}</ul>
-            <div class="row"><a class="btn btn-inverse" href="#report-${featured.id}">Read the summary</a><a class="btn btn-outline-inverse" href="#report-${featured.id}">${ICON.down} Full report (PDF)</a></div>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Research &amp; Insights</h2><p>Every publication summarised, filterable and citable without opening a PDF.</p><a class="textlink" href="#research">All ${D.PUBS.length} publications ${ICON.arrow}</a></div>
+          <div class="home-sec-body">
+            <a class="feat-pub" href="#report-${featured.id}"><img src="${featured.cover}" alt=""><div><span class="kind">Featured report · ${esc(featured.date)}</span><h3>${esc(featured.title)}</h3><p>${esc(featured.summary)}</p><span class="textlink">Read the summary ${ICON.arrow}</span></div></a>
+            <div class="list-divided">${recent.map((p) => `<a class="mini-pub" href="#report-${p.id}"><span class="t">${esc(p.title)}</span><span class="m">${esc(p.type)} · ${esc(p.date)} · ${esc((p.authors || []).join(", "))}</span></a>`).join("")}</div>
           </div>
-          <div class="media"><img src="${featured.cover}" alt="Cover of the Landscape of Climate Finance in Ethiopia report"></div>
         </div>
       </div>
     </section>
 
     <section class="section band">
       <div class="container">
-        ${sectionHead("Our work", "Three areas of focus", "Each pillar combines research, market testing with partners and support to policy.", ["About our approach", "#work"])}
-        <div class="pillars">${Object.values(D.PILLARS).map((p) => `<a class="pillar" href="#pillar-${p.id}"><div class="img"><img src="${p.img}" alt=""></div><h3>${esc(p.name)}</h3><p>${esc(p.lede)}</p><div class="fact"><strong>${esc(p.fact.value)}</strong>${esc(p.fact.label)}<div class="tiny muted">Source: ${esc(p.fact.source)}</div></div></a>`).join("")}</div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="grid grid-sidebar">
-          <div>
-            ${sectionHead("Research & Insights", "More recent publications", null, ["All research", "#research"])}
-            <div class="list-divided">${later.map((p) => pubRow(p)).join("")}</div>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Data &amp; Markets</h2><p>Headline indicators on Ethiopia's financial sector, each with its source.</p><a class="textlink" href="#data">All indicators ${ICON.arrow}</a></div>
+          <div class="home-sec-body">
+            <div class="lead-stat"><span class="value">${esc(lead.value)}</span><span class="label">${esc(lead.label)}, ${esc(lead.delta)}</span><span class="source">Source: ${esc(lead.source)}</span></div>
+            <div>${barChart([["2020", 12.2], ["2025", 139.5]], { W: 420, H: 170, fmt: (v) => v + "m", max: 160, aria: "Mobile money accounts in Ethiopia, 2020 and 2025, in millions" })}</div>
           </div>
-          <aside class="stack">
-            <div class="card">
-              <p class="eyebrow brand">For journalists</p>
-              <p style="margin-top:6px">Sourced statistics, plain-language summaries and the right person to speak to.</p>
-              <a class="textlink" href="#media" style="margin-top:10px">Media resources ${ICON.arrow}</a>
-            </div>
-            <div class="card">
-              <p class="eyebrow brand">News &amp; commentary</p>
-              <div class="list-divided">${D.NEWS.slice(0, 3).map((n) => `<a href="#news" style="display:block;padding:10px 0;text-decoration:none;color:inherit"><span class="tiny muted">${fmtDate(n.date)} · ${esc(n.kind)}</span><div style="font-weight:600;font-size:var(--fs-15)">${esc(n.title)}</div></a>`).join("")}</div>
-              <a class="textlink" href="#news" style="margin-top:8px">All news ${ICON.arrow}</a>
-            </div>
-          </aside>
         </div>
       </div>
     </section>
 
-    <section class="section band-teal">
+    <section class="section">
       <div class="container">
-        ${sectionHead("Impact & results", "What has changed because of this work", "Each result is shown as an outcome, the intervention behind it, the evidence we have, and where to read more.", ["All results", "#impact"])}
-        <div class="grid grid-2">${D.IMPACT.slice(0, 2).map((i) => `<article class="stack-sm"><p class="eyebrow" style="color:var(--on-teal-muted)">${esc(pillarName(i.pillar))}</p><h3 class="serif" style="font-size:var(--fs-24);color:#fff">${esc(i.outcome)}</h3><p class="muted">${esc(i.intervention)}</p><ul class="quiet-list" style="margin-top:8px">${i.evidence.map((e) => `<li class="row" style="gap:8px;align-items:flex-start"><span class="status ${e.ok ? "good" : "warn"}" style="flex:none">${e.ok ? "Sourced" : "Placeholder"}</span><span class="small" style="color:#e6edec">${esc(e.t)}</span></li>`).join("")}</ul></article>`).join("")}</div>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Impact &amp; results</h2><p>What changed, the intervention behind it, and the evidence.</p><a class="textlink" href="#impact">All results ${ICON.arrow}</a></div>
+          <div class="home-sec-body two">${[D.IMPACT[2], D.IMPACT[0]].map((i) => `<a class="result-mini" href="#impact"><span class="eyebrow">${esc(pillarName(i.pillar))}</span><h3>${esc(i.outcome)}</h3><p>${esc(i.evidence[0].t)}</p><span class="src">${esc(i.evidence[0].src)}</span></a>`).join("")}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band">
+      <div class="container">
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Work with us</h2><p>Careers, consulting calls and procurement, each with its own route.</p><a class="textlink" href="#workwithus">All opportunities ${ICON.arrow}</a></div>
+          <div class="home-sec-body two">
+            <div><p class="eyebrow">Procurement &amp; tenders</p><div class="list-divided">${openT.map((t) => `<a class="mini-pub" href="#tender-${t.id}"><span class="t">${esc(t.title)}</span><span class="m">${esc(t.type)} · closes ${fmtDate(t.deadline)}</span></a>`).join("")}</div></div>
+            <div><p class="eyebrow">Careers</p><div class="list-divided">${D.JOBS.slice(0, 2).map((j) => `<a class="mini-pub" href="#job-${j.id}"><span class="t">${esc(j.title)}</span><span class="m">${esc(j.location)} · apply by ${fmtDate(j.deadline)}</span></a>`).join("")}</div></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        <div class="grid grid-2" style="align-items:stretch">
-          <article class="card flush" style="display:grid;grid-template-rows:200px 1fr"><img src="img/pillar-inclusion.jpg" alt="A woman reading on her phone" style="width:100%;height:100%;object-fit:cover"><div style="padding:var(--s-5)"><p class="eyebrow brand">Programme</p><h3 class="serif" style="font-size:var(--fs-24);margin:6px 0 10px">Board Ready Women</h3><p class="muted">A corporate governance training for women aspiring to board membership, delivered with IFC across three rounds. It pairs leadership skills with environmental, social and governance principles.</p><a class="textlink" href="#impact" style="margin-top:12px">See the results ${ICON.arrow}</a></div></article>
-          <div>
-            ${sectionHead("Work With Us", "Open opportunities", "Careers, consulting calls and procurement each have their own route.", ["Work With Us", "#workwithus"])}
-            <div class="list-divided">${openT.map(tenderRow).join("")}${D.JOBS.slice(0, 1).map(jobRow).join("")}</div>
-          </div>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>News &amp; commentary</h2><p>Analysis from the team, press releases and events.</p><a class="textlink" href="#news">All news ${ICON.arrow}</a></div>
+          <div class="list-divided home-sec-body" style="display:block">${D.NEWS.slice(0, 3).map(newsItem).join("")}</div>
         </div>
       </div>
     </section>
 
     <section class="section tight band">
       <div class="container">
-        <div class="grid grid-2" style="gap:var(--s-7)">
-          <div><p class="eyebrow brand">Funders and incubator</p><div class="logos" style="margin-top:12px">${D.FUNDERS.map((f) => `<span class="logo-tile">${esc(f)}</span>`).join("")}<span class="logo-tile">FSD Africa <span class="tiny muted" style="font-family:var(--font-body);font-weight:400">· incubator</span></span></div></div>
-          <div><p class="eyebrow brand">Part of the FSD Network</p><div class="logos" style="margin-top:12px">${D.NETWORK.map((n) => `<span class="logo-tile">${esc(n)}</span>`).join("")}</div></div>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Funders and network</h2><p>Funded by the Bill &amp; Melinda Gates Foundation and UK International Development. Incubated by FSD Africa.</p><a class="textlink" href="#about">About FSD Ethiopia ${ICON.arrow}</a></div>
+          <div class="home-sec-body" style="display:block"><p class="eyebrow" style="margin-bottom:8px">Part of the FSD Network</p><p class="muted">${D.NETWORK.join(" · ")}</p></div>
         </div>
       </div>
     </section>
 
     <section class="section tight">
       <div class="container">
-        <div class="grid grid-2" style="align-items:center">
-          <div><h2 style="font-size:var(--fs-24)">Updates from FSD Ethiopia</h2><p class="muted" style="margin-top:6px">New research, data releases and opportunities, about once a month. Recent editions: Vol.1 Edition 3 (Feb/Mar 2024), Edition 2 (Jan 2024), Edition 1 (Oct/Nov 2023).</p></div>
-          <form class="row" data-form="newsletter" novalidate><div class="field" style="flex:1;min-width:220px"><label for="nl-email" class="sr-only">Email address</label><input class="input" id="nl-email" type="email" placeholder="Your email address" autocomplete="email"></div><button class="btn btn-primary" type="submit">Subscribe</button></form>
+        <div class="home-sec">
+          <div class="home-sec-head"><h2>Updates</h2><p>New research, data releases and opportunities, about once a month.</p></div>
+          <form class="row home-sec-body" style="display:flex" data-form="newsletter" novalidate><div class="field" style="flex:1;min-width:220px;max-width:360px"><label for="nl-email" class="sr-only">Email address</label><input class="input" id="nl-email" type="email" placeholder="Your email address" autocomplete="email"></div><button class="btn btn-primary" type="submit">Subscribe</button></form>
         </div>
       </div>
     </section>`;
@@ -340,6 +310,7 @@
     const tc = countBy((p) => p.topics), yc = countBy((p) => [String(p.year)]), tyc = countBy((p) => [p.type]), pc = countBy((p) => [p.pillar]);
     const years = Object.keys(yc).sort((a, b) => b - a);
     const anyFilter = s.q || s.topics.length || s.years.length || s.types.length || s.pillars.length || s.origin !== "all";
+    const moreActive = s.types.length || s.origin !== "all";
     const group = (key, title, opts, counts, labelFn) => `<div class="filter-group"><div class="fg-head"><span>${title}</span>${s[key].length ? `<button class="btn btn-ghost btn-sm" data-clear="${key}">Clear</button>` : ""}</div><div class="opts">${opts.map((o) => `<label class="check"><input type="checkbox" data-filter="${key}" value="${esc(o)}" id="f-${key}-${esc(o).replace(/\W+/g, "")}" ${s[key].includes(o) ? "checked" : ""}><span>${esc(labelFn ? labelFn(o) : o)}</span><span class="count">${counts[o] || 0}</span></label>`).join("")}</div></div>`;
     const chips = [].concat(
       s.topics.map((t) => ["topics", t, t]), s.years.map((y) => ["years", y, y]), s.types.map((t) => ["types", t, t]), s.pillars.map((p) => ["pillars", p, pillarName(p)]),
@@ -347,7 +318,7 @@
     return `
     <header class="page-head compact"><div class="container">
       <div class="head-row">
-        <div>${breadcrumb([["Home", "#home"], ["Research & Insights"]])}<h1>Research &amp; Insights</h1><p class="lede">${D.PUBS.length} publications, each summarised and citable. Filter by topic, pillar, type and year, or search the full library.</p></div>
+        <div>${breadcrumb([["Home", "#home"], ["Research & Insights"]])}<h1>Research &amp; Insights</h1><p class="lede">${D.PUBS.length} publications, each summarised and citable.</p></div>
         <form class="row head-search" data-form="research-search" role="search"><div class="field" style="flex:1;min-width:0"><label class="sr-only" for="rs-q">Search research</label><input class="input" id="rs-q" type="search" placeholder="Search titles, summaries, authors and topics" value="${esc(s.q)}"></div><button class="btn btn-primary" type="submit">Search</button></form>
       </div>
     </div></header>
@@ -355,16 +326,18 @@
       <aside>
         <button class="btn btn-secondary filters-toggle" data-toggle-filters aria-expanded="${s.filtersOpen}">Filters ${anyFilter ? `(${chips.length})` : ""}</button>
         <div class="filters compact ${s.filtersOpen ? "open" : ""}" id="research-filters">
-          <div class="row between"><h2 style="font-size:var(--fs-16);font-family:var(--font-body)">Filter publications</h2>${anyFilter ? `<button class="btn btn-ghost btn-sm" data-clear="all">Reset</button>` : ""}</div>
+          <div class="row between"><h2 style="font-size:var(--fs-15);font-family:var(--font-body)">Filter</h2>${anyFilter ? `<button class="btn btn-ghost btn-sm" data-clear="all">Reset</button>` : ""}</div>
           ${group("topics", "Topic", D.TOPICS.filter((t) => tc[t]), tc)}
           ${group("pillars", "Strategic pillar", Object.keys(D.PILLARS), pc, pillarName)}
-          ${group("types", "Publication type", D.TYPES.filter((t) => tyc[t]), tyc)}
           ${group("years", "Year", years, yc)}
+          <details class="more-filters" ${moreActive ? "open" : ""}><summary>More filters${moreActive ? ` (${s.types.length + (s.origin !== "all" ? 1 : 0)})` : ""}</summary>
+          ${group("types", "Publication type", D.TYPES.filter((t) => tyc[t]), tyc)}
           <div class="filter-group"><div class="fg-head"><span>Source</span></div><div class="opts">${[["all", "All documents"], ["fsd", "FSD Ethiopia publications"], ["partner", "Partner and government documents"]].map((o) => `<label class="check"><input type="radio" name="origin" data-origin value="${o[0]}" id="f-origin-${o[0]}" ${s.origin === o[0] ? "checked" : ""}><span>${o[1]}</span></label>`).join("")}</div></div>
+          </details>
         </div>
       </aside>
       <div>
-        <div class="results-bar"><span class="count num">${list.length} publication${list.length === 1 ? "" : "s"}${anyFilter ? "" : " · newest first"}</span><div class="row"><label class="small muted" for="rs-sort">Sort</label><select class="select" id="rs-sort" data-sort style="min-height:36px;padding:6px 36px 6px 10px;width:auto"><option value="newest" ${s.sort === "newest" ? "selected" : ""}>Newest first</option><option value="oldest" ${s.sort === "oldest" ? "selected" : ""}>Oldest first</option><option value="title" ${s.sort === "title" ? "selected" : ""}>Title A–Z</option></select></div></div>
+        <div class="results-bar"><span class="count num">${list.length} publication${list.length === 1 ? "" : "s"}</span><div class="row"><label class="small muted" for="rs-sort">Sort</label><select class="select" id="rs-sort" data-sort style="min-height:34px;padding:5px 36px 5px 10px;width:auto;border-color:transparent;background-color:transparent"><option value="newest" ${s.sort === "newest" ? "selected" : ""}>Newest first</option><option value="oldest" ${s.sort === "oldest" ? "selected" : ""}>Oldest first</option><option value="title" ${s.sort === "title" ? "selected" : ""}>Title A–Z</option></select></div></div>
         ${chips.length ? `<div class="active-filters">${chips.map((c) => `<button class="pill-filter" aria-pressed="true" data-remove="${c[0]}" data-value="${esc(c[1])}">${esc(c[2])} <span class="x" aria-hidden="true">×</span><span class="sr-only">Remove filter</span></button>`).join("")}</div>` : ""}
         <div class="list-divided" aria-live="polite">${list.length ? list.map((p) => pubRow(p)).join("") : `<div class="panel" style="margin-top:16px"><strong>No publications match these filters.</strong><p class="muted small" style="margin-top:4px">Try removing a filter, or search the whole site.</p><button class="btn btn-secondary btn-sm" data-clear="all" style="margin-top:10px">Reset filters</button></div>`}</div>
       </div>
@@ -408,23 +381,23 @@
     const t = state.data.topic;
     const stats = D.STATS.filter((s) => t === "All" || s.topic === t);
     return `
-    <header class="page-head compact"><div class="container"><div class="head-row"><div>${breadcrumb([["Home", "#home"], ["Data & Markets"]])}<h1>Data &amp; Markets</h1><p class="lede">Headline indicators on Ethiopia's financial sector, each with the publication it comes from. Written to be quoted, not mined.</p></div><div class="row" style="align-self:end"><span class="small muted">Reviewed quarterly by the Development Impact team · last review Oct 2026</span></div></div></div></header>
+    <header class="page-head compact"><div class="container"><div class="head-row"><div>${breadcrumb([["Home", "#home"], ["Data & Markets"]])}<h1>Data &amp; Markets</h1><p class="lede">Headline indicators on Ethiopia's financial sector, each with the publication it comes from.</p></div></div></div></header>
     <section class="section tight"><div class="container">
-      <div class="grid grid-sidebar" style="margin-bottom:var(--s-6)">
+      <div class="grid grid-sidebar data-grid" style="margin-bottom:var(--s-7)">
         <article>
           <p class="eyebrow brand">Headline indicator · Digital finance</p>
-          <h2 style="margin:6px 0 10px;font-size:var(--fs-28)">Mobile money accounts grew more than tenfold in five years</h2>
-          <p class="prose" style="max-width:none;color:var(--ink-700)">Ethiopia had 12.2 million mobile money accounts in 2020 and 139.5 million in 2025, as Telebirr, M-Pesa and bank wallets launched and salaries, fuel and utilities moved onto digital rails. Accounts are not the same as active users, and the gender gap in account ownership has not closed at the same pace.</p>
-          <div class="card" style="margin-top:var(--s-4)">${barChart([["2020", 12.2, false, "sourced"], ["2025", 139.5, false, "sourced"]], { W: 640, H: 200, fmt: (v) => v + "m", max: 160, aria: "Mobile money accounts in Ethiopia, 2020 and 2025, in millions", caption: "Mobile money accounts, millions. Source: FSD Ethiopia blog (Mar 2026), citing the National Bank of Ethiopia. Only the two published points are shown.", right: '<span class="legend"><span style="--c:var(--chart-1)">Sourced value</span></span>' })}</div>
+          <h2 style="margin:6px 0 10px">Mobile money accounts grew more than tenfold in five years</h2>
+          <p class="prose" style="max-width:68ch;color:var(--ink-700)">Ethiopia had 12.2 million mobile money accounts in 2020 and 139.5 million in 2025, as Telebirr, M-Pesa and bank wallets launched and salaries, fuel and utilities moved onto digital rails. Accounts are not the same as active users, and the gender gap in account ownership has not closed at the same pace.</p>
+          <div style="margin-top:var(--s-5)">${barChart([["2020", 12.2], ["2025", 139.5]], { W: 640, H: 210, fmt: (v) => v + "m", max: 160, aria: "Mobile money accounts in Ethiopia, 2020 and 2025, in millions", caption: "Mobile money accounts, millions. Only the two published points are shown.", right: "Source: FSD Ethiopia blog (Mar 2026), citing the National Bank of Ethiopia" })}</div>
+          <div style="margin-top:var(--s-6)"><p class="eyebrow brand" style="margin-bottom:4px">Related analysis</p><div class="list-divided">${["mobile-money-2023", "agent-network-2025"].map((id) => { const p = byId(D.PUBS, id); return `<a class="mini-pub" href="#report-${p.id}"><span class="t">${esc(p.title)}</span><span class="m">${esc(p.type)} · ${esc(p.date)} · ${esc((p.authors || []).join(", "))}</span></a>`; }).join("")}</div></div>
         </article>
-        <aside class="stack">
-          <div class="card"><p class="eyebrow brand">Account ownership by gender, 2024</p>${hbarChart([["Women", 42], ["Men", 57]], { fmt: (v) => v + "%", max: 100, padL: 60, W: 320, aria: "Share of women and men with an account in 2024", caption: "Share of adults with an account. Source: FSD Ethiopia blog, Jul 2026." })}</div>
-          <div class="card"><p class="eyebrow brand">Methodology and sources</p><p class="small" style="margin-top:6px">Each indicator names the publication it was taken from. Where FSD Ethiopia republishes a regulator's figure, the regulator is named. Request the underlying series through the <a href="#contact">research enquiry route</a>.</p></div>
-          <div class="card"><p class="eyebrow brand">Read the analysis</p><div class="list-divided">${["mobile-money-2023", "agent-network-2025"].map((id) => { const p = byId(D.PUBS, id); return `<a href="#report-${p.id}" style="display:block;padding:8px 0;text-decoration:none;color:inherit"><span class="tiny muted">${esc(p.type)} · ${esc(p.date)}</span><div style="font-weight:600;font-size:var(--fs-14)">${esc(p.title)}</div></a>`; }).join("")}</div></div>
+        <aside class="stack" style="gap:var(--s-6)">
+          <div><p class="eyebrow brand">Account ownership by gender, 2024</p>${hbarChart([["Women", 42], ["Men", 57]], { fmt: (v) => v + "%", max: 100, padL: 60, W: 320, aria: "Share of women and men with an account in 2024" })}<p class="source-line">Share of adults with an account. Source: FSD Ethiopia blog, Jul 2026.</p></div>
+          <div><p class="eyebrow brand">Methodology and sources</p><p class="small muted" style="margin-top:6px">Each indicator names the publication it was taken from. Where FSD Ethiopia republishes a regulator's figure, the regulator is named. Indicators are reviewed quarterly by the Development Impact team. Request the underlying series through the <a href="#contact">research enquiry route</a>.</p></div>
         </aside>
       </div>
-      <div class="row between" style="margin-bottom:var(--s-4)"><h2 style="font-size:var(--fs-24)">All indicators</h2><div class="row" role="group" aria-label="Filter indicators by topic">${topics.map((x) => `<button class="pill-filter" data-data-topic="${esc(x)}" aria-pressed="${x === t}">${esc(x)}</button>`).join("")}</div></div>
-      <div class="grid grid-3" style="gap:var(--s-4) var(--s-6)" aria-live="polite">${stats.map((s) => `<div class="stat"><span class="eyebrow" style="font-size:11px">${esc(s.topic)}</span><span class="value">${esc(s.value)}</span><span class="label">${esc(s.label)}</span>${s.delta ? `<span class="small">${esc(s.delta)}</span>` : ""}<span class="source">Source: ${esc(s.source)}</span></div>`).join("")}</div>
+      <div class="row between" style="margin-bottom:var(--s-4)"><h2>All indicators</h2><div class="row" role="group" aria-label="Filter indicators by topic">${topics.map((x) => `<button class="pill-filter" data-data-topic="${esc(x)}" aria-pressed="${x === t}">${esc(x)}</button>`).join("")}</div></div>
+      <div class="grid grid-3" style="gap:var(--s-4) var(--s-6)" aria-live="polite">${stats.map((s) => `<div class="stat"><span class="value">${esc(s.value)}</span><span class="label">${esc(s.label)}</span>${s.delta ? `<span class="small muted">${esc(s.delta)}</span>` : ""}<span class="source">Source: ${esc(s.source)}</span></div>`).join("")}</div>
       <p class="small muted" style="margin-top:var(--s-5);max-width:80ch">All six indicators are quoted from fsdethiopia.org as of October 2026. The live platform would add time series, regional breakdowns and downloadable tables once a data governance process agrees which series FSD Ethiopia publishes and how often.</p>
     </div></section>`;
   };
@@ -433,19 +406,20 @@
   views.impact = () => {
     const f = state.impact.pillar;
     const rows = D.IMPACT.filter((i) => f === "all" || i.pillar === f);
+    const head = [["4", "Policies and strategies supported", "Source: Resource Center", true], ["4", "Convenings held since 2024", "Source: Our Events", true], ["USD —", "Capital mobilised", "Placeholder for approved figure", false]];
     return `
-    <header class="page-head compact"><div class="container"><div class="head-row"><div>${breadcrumb([["Home", "#home"], ["Impact & Results"]])}<h1>Impact &amp; results</h1><p class="lede">What changed, what we did, and the evidence for it. Every result names its source; anything awaiting approved figures is marked as a placeholder.</p></div><div class="row" role="group" aria-label="Filter by pillar" style="align-self:end">${[["all", "All pillars"]].concat(Object.keys(D.PILLARS).map((k) => [k, pillarName(k)])).map((x) => `<button class="pill-filter" data-impact-pillar="${x[0]}" aria-pressed="${x[0] === f}">${esc(x[1])}</button>`).join("")}</div></div></div></header>
+    <header class="page-head compact"><div class="container"><div class="head-row"><div>${breadcrumb([["Home", "#home"], ["Impact & Results"]])}<h1>Impact &amp; results</h1><p class="lede">What changed, what we did, and the evidence for it.</p></div><div class="row" role="group" aria-label="Filter by pillar" style="align-self:end">${[["all", "All pillars"]].concat(Object.keys(D.PILLARS).map((k) => [k, pillarName(k)])).map((x) => `<button class="pill-filter" data-impact-pillar="${x[0]}" aria-pressed="${x[0] === f}">${esc(x[1])}</button>`).join("")}</div></div></div></header>
     <section class="section tight"><div class="container">
-      <div class="impact-summary">
-        ${[["Policies and strategies supported", "4", "NAFIR, agent network strategy, green instruments scoping, climate finance landscape", "Source: Resource Center", true], ["Convenings held", "4", "Two Climate Finance Summits, a women's DFS convening and a stakeholder summit", "Source: Our Events", true], ["Capital mobilised", "USD —", "Toward green instruments and MSME lending facilities", "", false], ["Market interventions live", "—", "Pilots with licensed financial institutions", "", false]].map((k) => `<div class="stat" style="padding:10px 0"><span class="value" style="font-size:var(--fs-28)">${esc(k[1])}</span><span class="label" style="font-size:var(--fs-14)">${esc(k[0])}</span><span class="source">${esc(k[2])}</span>${k[4] ? `<span class="tiny muted">${esc(k[3])}</span>` : illus("Placeholder")}</div>`).join("")}
-        <div class="how"><p class="eyebrow brand">How to read this page</p><p class="small" style="margin-top:4px">Each result is a chain: <strong>Outcome</strong> in the market → <strong>Intervention</strong> behind it → <strong>Evidence</strong> we can point to → where to <strong>read more</strong>. Activities alone are not counted as results.</p></div>
-      </div>
-      <div class="stack" style="gap:var(--s-4)" aria-live="polite">${rows.map((i) => `<article class="impact-row">
-        <div><span class="eyebrow">Outcome</span><span class="big">${esc(i.outcome)}</span><span class="tiny muted">${esc(pillarName(i.pillar))}</span></div>
-        <div><span class="eyebrow">Intervention</span><p class="small">${esc(i.intervention)}</p></div>
-        <div><span class="eyebrow">Evidence</span><ul class="quiet-list">${i.evidence.map((e) => `<li><span class="status ${e.ok ? "good" : "warn"}" style="margin-bottom:4px">${e.ok ? "Sourced" : "Placeholder"}</span><div class="small">${esc(e.t)}</div><div class="tiny muted">${esc(e.src)}</div></li>`).join("")}</ul></div>
-        <div><span class="eyebrow">Read more</span>${i.related.pub ? `<a class="textlink small" href="#report-${i.related.pub}">${esc(byId(D.PUBS, i.related.pub).title)}</a>` : ""}${i.related.news ? `<a class="textlink small" href="#news">${esc(byId(D.NEWS, i.related.news).title)}</a>` : ""}<a class="textlink small" href="#pillar-${i.pillar}">${esc(pillarName(i.pillar))} pillar</a></div>
+      <div class="headline-results">${head.map((k) => `<div class="stat"><span class="value">${esc(k[0])}</span><span class="label">${esc(k[1])}</span><span class="source ${k[3] ? "" : "placeholder"}">${esc(k[2])}</span></div>`).join("")}</div>
+      <div class="results" aria-live="polite">${rows.map((i) => `<article class="result">
+        <p class="eyebrow">${esc(pillarName(i.pillar))}</p>
+        <h2 class="outcome">${esc(i.outcome)}</h2>
+        <div class="result-body">
+          <div><p class="eyebrow brand">What FSD did</p><p>${esc(i.intervention)}</p></div>
+          <div><p class="eyebrow brand">Evidence</p><ul class="evidence">${i.evidence.map((e) => `<li class="${e.ok ? "ok" : "ph"}"><span>${esc(e.t)}</span><span class="src">${e.ok ? "Source: " : ""}${esc(e.src)}</span></li>`).join("")}</ul><p class="read-more">${i.related.pub ? `<a class="textlink" href="#report-${i.related.pub}">${esc(byId(D.PUBS, i.related.pub).title)} ${ICON.arrow}</a>` : i.related.news ? `<a class="textlink" href="#news">${esc(byId(D.NEWS, i.related.news).title)} ${ICON.arrow}</a>` : `<a class="textlink" href="#pillar-${i.pillar}">${esc(pillarName(i.pillar))} pillar ${ICON.arrow}</a>`}</p></div>
+        </div>
       </article>`).join("")}</div>
+      <p class="small muted" style="margin-top:var(--s-6);max-width:80ch">Programmes listed are real. Figures shown as “—” are placeholders for approved results from FSD Ethiopia's results framework; no outcome numbers have been invented.</p>
     </div></section>`;
   };
 
@@ -664,19 +638,18 @@
     if (!a.sel || !byId(set.items, a.sel)) a.sel = set.items[0].id;
     const ctx = mode === "recruitment" ? byId(D.JOBS, set.job) : byId(D.TENDERS, set.tender);
     const item = byId(set.items, a.sel);
-    const statusChip = (s) => s === "Shortlisted" ? "good" : s === "Processing" ? "neutral" : s === "Clarification requested" ? "warn" : s === "Not progressed" ? "neutral" : "brand";
-    const counts = { total: set.items.length, review: set.items.filter((i) => (a.decided[i.id] || i.status) === "Awaiting review").length, short: set.items.filter((i) => (a.decided[i.id] || i.status) === "Shortlisted").length };
+    const counts = { total: set.items.length, review: set.items.filter((i) => (a.decided[i.id] || i.status) === "Awaiting review").length };
     return `
-    <div class="admin-bar"><div class="container"><span class="brandlbl">FSD Ethiopia · Review console</span><span class="muted" style="color:#a6b5b4">Application intelligence</span><span class="demo">Demonstration data. No real applicants or vendors.</span></div></div>
+    <div class="admin-bar"><div class="container"><span class="brandlbl">Review console</span><span class="demo">Demonstration data</span></div></div>
     <section class="section tight admin"><div class="container">
-      <div class="row between" style="margin-bottom:var(--s-4);align-items:flex-end">
-        <div><p class="eyebrow brand">${mode === "recruitment" ? "Recruitment · " + esc(ctx.kind) : "Procurement · " + esc(ctx.type)}</p><h1 style="font-size:var(--fs-24);margin-top:2px">${esc(ctx.title)}</h1><p class="small muted num" style="margin-top:4px">${mode === "recruitment" ? `Deadline ${fmtDate(ctx.deadline)} · ${counts.total} applications · ${counts.review} awaiting review · ${counts.short} shortlisted` : `${esc(ctx.ref)} · Deadline ${fmtDate(ctx.deadline)} · ${counts.total} submissions · ${counts.review} awaiting review · ${counts.short} shortlisted`}</p></div>
-        <div class="row"><div class="pipeline"><span>Submission</span><i>→</i><span>Extraction</span><i>→</i><span>Rules check</span><i>→</i><span class="ai">AI-assisted analysis</span><i>→</i><span class="human">Human review</span><i>→</i><span class="human">Decision</span></div><div class="seg" role="group" aria-label="Review type"><button data-admin-mode="recruitment" aria-pressed="${mode === "recruitment"}">Recruitment</button><button data-admin-mode="procurement" aria-pressed="${mode === "procurement"}">Procurement</button></div></div>
+      <div class="row between" style="margin-bottom:var(--s-5);align-items:flex-end">
+        <div><p class="eyebrow brand">${mode === "recruitment" ? "Recruitment" : "Procurement"}</p><h1 style="font-size:var(--fs-24);margin-top:2px">${esc(ctx.title)}</h1><p class="small muted num" style="margin-top:4px">${mode === "recruitment" ? `Deadline ${fmtDate(ctx.deadline)} · ${counts.total} applications · ${counts.review} awaiting review` : `${esc(ctx.ref)} · Deadline ${fmtDate(ctx.deadline)} · ${counts.total} submissions · ${counts.review} awaiting review`}</p></div>
+        <div class="seg" role="group" aria-label="Review type"><button data-admin-mode="recruitment" aria-pressed="${mode === "recruitment"}">Recruitment</button><button data-admin-mode="procurement" aria-pressed="${mode === "procurement"}">Procurement</button></div>
       </div>
       <div class="admin-grid">
-        <aside class="queue card flush">
-          <div class="qh"><span class="eyebrow">${mode === "recruitment" ? "Applicants" : "Vendors"} (${set.items.length})</span><span class="tiny muted">by AI score</span></div>
-          ${set.items.map((it) => `<a class="q-item ${a.sel === it.id ? "sel" : ""}" href="#admin-${esc(it.id)}" aria-current="${a.sel === it.id ? "true" : "false"}">${it.score == null ? '<span class="score sm" style="--p:0" data-v="…" aria-label="Processing"></span>' : `<span class="score sm" style="--p:${it.score}" data-v="${it.score}" aria-label="Score ${it.score} of 100"></span>`}<span class="qb"><span class="n">${esc(it.name)}</span><span class="m">${esc(it.id)} · ${it.mandatory === "—" ? "processing" : esc(it.mandatory) + " mandatory"}</span><span class="status ${statusChip(a.decided[it.id] || it.status)}" style="margin-top:4px">${esc(a.decided[it.id] || it.status)}</span></span></a>`).join("")}
+        <aside class="queue">
+          <p class="eyebrow" style="padding:0 0 8px">${mode === "recruitment" ? "Applicants" : "Vendors"} · ${set.items.length}</p>
+          ${set.items.map((it) => `<a class="q-item ${a.sel === it.id ? "sel" : ""}" href="#admin-${esc(it.id)}" aria-current="${a.sel === it.id ? "true" : "false"}">${it.score == null ? '<span class="score sm" style="--p:0" data-v="…" aria-label="Processing"></span>' : `<span class="score sm" style="--p:${it.score}" data-v="${it.score}" aria-label="Score ${it.score} of 100"></span>`}<span class="qb"><span class="n">${esc(it.name)}</span><span class="st ${statusChipFor(a.decided[it.id] || it.status)}">${esc(a.decided[it.id] || it.status)}</span></span></a>`).join("")}
         </aside>
         ${views.adminDetail(item, set, mode)}
       </div>
@@ -687,33 +660,36 @@
     const a = state.admin;
     const total = set.criteria.reduce((s, c) => s + c.max, 0);
     const decided = a.decided[item.id];
-    const mand = set.criteria.map((c, i) => ({ c, s: item.scores[i] || {} })).filter((x) => x.c.mandatory);
-    const pref = set.criteria.map((c, i) => ({ c, s: item.scores[i] || {} })).filter((x) => !x.c.mandatory);
+    const all = set.criteria.map((c, i) => ({ c, s: item.scores[i] || {} }));
+    const mand = all.filter((x) => x.c.mandatory), pref = all.filter((x) => !x.c.mandatory);
     const met = (v) => /Strong|Met/.test(v || "");
     const vClass = (v) => met(v) ? "good" : /Moderate|Opened/.test(v || "") ? "brand" : /Weak/.test(v || "") ? "warn" : "bad";
     const summary = item.score == null ? "" : mode === "recruitment"
-      ? `${item.name} meets ${item.mandatory} mandatory criteria with an overall match of ${item.score}%. ${item.scores[0].verdict === "Strong" ? "Relevant experience is the strongest area" : "Relevant experience is " + item.scores[0].verdict.toLowerCase()}, based on the CV and cover letter. ${item.gaps.length ? "The system could not find evidence for " + item.gaps.length + " item" + (item.gaps.length === 1 ? "" : "s") + ", listed below, which the reviewer should confirm before deciding." : "No gaps were flagged."}`
+      ? `${item.name} meets ${item.mandatory} mandatory criteria with an overall match of ${item.score}%. ${item.scores[0].verdict === "Strong" ? "Relevant experience is the strongest area" : "Relevant experience is " + item.scores[0].verdict.toLowerCase()}, based on the CV and cover letter. ${item.gaps.length ? "No evidence was found for " + item.gaps.length + " item" + (item.gaps.length === 1 ? "" : "s") + ", listed under gaps, which the reviewer should confirm before deciding." : "No gaps were flagged."}`
       : `${item.name} submitted ${item.docs.length} documents and meets ${item.mandatory} mandatory document checks. Technical score is ${item.score} of 100 before the financial proposal is opened. ${item.gaps.length ? item.gaps.length + " item" + (item.gaps.length === 1 ? "" : "s") + " need" + (item.gaps.length === 1 ? "s" : "") + " clarification before scoring is final." : "No gaps were flagged."}`;
     const recommendation = item.score == null ? "" : item.gaps.length && /mandatory/i.test(item.gaps.join(" ")) ? "Request clarification" : item.score >= 70 ? (mode === "recruitment" ? "Shortlist for interview" : "Advance to financial opening") : "Hold";
-    const evidenceRow = (x, i, showPts) => `<div class="crit"><div><div class="row" style="gap:8px"><span class="tick ${met(x.s.verdict) ? "ok" : x.s.verdict === "No evidence" || x.s.verdict === "Not met" ? "no" : "part"}" aria-hidden="true">${met(x.s.verdict) ? ICON.check : x.s.verdict === "No evidence" || x.s.verdict === "Not met" ? "!" : "–"}</span><strong>${esc(x.c.k)}</strong><span class="status ${vClass(x.s.verdict)}">${esc(x.s.verdict || "—")}</span></div>${x.s.evidence ? `<div class="ev"><span class="muted">Evidence:</span> ${esc(x.s.evidence)}${x.s.quote || x.s.src ? `<details ${i === 0 ? "open" : ""}><summary>Source passage</summary>${x.s.quote ? `<blockquote>“${esc(x.s.quote)}”</blockquote>` : ""}<div class="src">${x.s.src ? `<span>${esc(x.s.src)}</span><a href="#admin-${esc(item.id)}" data-toast="In the live console this opens the document at the highlighted passage.">Open document ${ICON.ext}</a>` : ""}</div></details>` : ""}</div>` : `<div class="ev muted">No evidence identified in the submitted documents.</div>`}</div>${showPts ? `<div class="bar-col"><div class="bar" aria-hidden="true"><i style="width:${x.c.max ? Math.round((x.s.pts / x.c.max) * 100) : 0}%"></i></div></div><div class="pts num">${x.s.pts == null ? "—" : x.s.pts}/${x.c.max}</div>` : `<div></div><div class="pts num">${met(x.s.verdict) ? "Pass" : x.s.verdict === "Opened after technical" ? "—" : "Fail"}</div>`}</div>`;
+    const evidence = (x) => x.s.evidence ? `<details class="ev-details"><summary>View evidence</summary><div class="ev"><p>${esc(x.s.evidence)}</p>${x.s.quote ? `<blockquote>“${esc(x.s.quote)}”</blockquote>` : ""}${x.s.src ? `<div class="src"><span>${esc(x.s.src)}</span><a href="#admin-${esc(item.id)}" data-toast="In the live console this opens the document at the highlighted passage.">Open document ${ICON.ext}</a></div>` : ""}</div></details>` : `<span class="tiny muted">No evidence identified in the submitted documents.</span>`;
+    const critRow = (x, pts) => `<li class="crit-row"><span class="tick ${met(x.s.verdict) ? "ok" : x.s.verdict === "No evidence" || x.s.verdict === "Not met" ? "no" : "part"}" aria-hidden="true">${met(x.s.verdict) ? ICON.check : x.s.verdict === "No evidence" || x.s.verdict === "Not met" ? "!" : "–"}</span><span class="k"><strong>${esc(x.c.k)}</strong>${evidence(x)}</span><span class="v ${vClass(x.s.verdict)}">${esc(x.s.verdict || "—")}</span><span class="pts num">${pts ? `${x.s.pts == null ? "—" : x.s.pts}/${x.c.max}` : ""}</span></li>`;
     return `
-      <div class="review stack" style="gap:var(--s-4)">
-        <div class="card">
-          <div class="row between" style="align-items:flex-start"><div><p class="eyebrow brand">${mode === "recruitment" ? "Candidate match" : "Compliance and technical score"}</p><h2 style="font-size:var(--fs-24)">${esc(item.name)} <span class="muted small num" style="font-family:var(--font-body);font-weight:400">${esc(item.id)}</span></h2><p class="small muted" style="margin-top:2px">${mode === "recruitment" ? "Applied for" : "Submitted for"} <strong style="color:var(--fg)">${esc(mode === "recruitment" ? byId(D.JOBS, set.job).title : byId(D.TENDERS, set.tender).title)}</strong></p></div>${item.score == null ? '<span class="status neutral">Processing</span>' : `<div class="row" style="gap:12px"><span class="score" style="--p:${item.score}" data-v="${item.score}%" aria-label="Score ${item.score} percent"></span><div class="small"><div><strong>${esc(item.mandatory)}</strong> mandatory met</div><div class="muted">${total} weighted points</div></div></div>`}</div>
-          ${item.score == null ? `<p class="muted" style="margin-top:12px">Document extraction is still running. Scores and evidence will appear here.</p>` : `<div class="ai-summary"><span class="eyebrow">AI summary · advisory</span><p>${esc(summary)}</p><p class="small"><strong>AI recommendation:</strong> ${esc(recommendation)}. <span class="muted">A named reviewer makes the decision.</span></p></div>`}
+      <div class="review">
+        <div class="review-head">
+          <div><p class="eyebrow brand">${mode === "recruitment" ? "Candidate assessment" : "Submission assessment"}</p><h2>${esc(item.name)}</h2><p class="small muted">${mode === "recruitment" ? "Applied for" : "Submitted for"} ${esc(mode === "recruitment" ? byId(D.JOBS, set.job).title : byId(D.TENDERS, set.tender).title)} · ${esc(item.id)}</p></div>
+          ${item.score == null ? '<span class="status neutral">Processing</span>' : `<div class="row" style="gap:12px"><span class="score" style="--p:${item.score}" data-v="${item.score}%" aria-label="Score ${item.score} percent"></span><div class="small"><div><strong>${esc(item.mandatory)}</strong> mandatory met</div><div class="muted">${total} weighted points</div></div></div>`}
         </div>
-        ${item.score == null ? "" : `
-        <div class="card"><p class="eyebrow brand" style="margin-bottom:4px">Mandatory requirements</p>${mand.map((x, i) => evidenceRow(x, i, false)).join("")}</div>
-        <div class="card"><div class="row between" style="margin-bottom:4px"><p class="eyebrow brand">Preferred criteria · weighted</p><span class="tiny muted">Criteria version ${mode === "recruitment" ? "CFS-2026-v2" : "RFP-014-v1"}</span></div>${pref.map((x, i) => evidenceRow(x, i + 1, true)).join("")}</div>
-        ${item.gaps.length ? `<div class="card" style="border-color:var(--status-warn)"><p class="eyebrow" style="color:var(--status-warn)">Missing or unclear information</p><ul class="prose" style="margin-top:8px;display:grid;gap:8px;max-width:none">${item.gaps.map((g) => `<li>${esc(g)}</li>`).join("")}</ul><p class="tiny muted" style="margin-top:10px">A gap means the system found no evidence. It does not mean the requirement is unmet. Check the documents before deciding.</p></div>` : ""}`}
-        <div class="card"><p class="eyebrow brand">Audit history</p><ul class="audit" style="margin-top:4px">${item.audit.concat(decided ? [["2026-10-08 09:30", "You", `Decision recorded: ${decided}. Rationale: ${a.rationale || ""}`]] : []).map((x) => `<li><span class="t">${esc(x[0])}</span><span><span class="who">${esc(x[1])}</span> · ${esc(x[2])}</span></li>`).join("")}</ul></div>
+        ${item.score == null ? `<p class="muted" style="margin-top:12px">Document extraction is still running. Scores and evidence will appear here.</p>` : `
+        <div class="ai-summary"><span class="eyebrow">AI summary · advisory</span><p>${esc(summary)}</p></div>
+        <section class="review-sec"><h3>Mandatory requirements</h3><ul class="crit-list">${mand.map((x) => critRow(x, false)).join("")}</ul></section>
+        ${item.gaps.length ? `<section class="review-sec gaps"><h3>Missing or unclear</h3><ul>${item.gaps.map((g) => `<li>${esc(g)}</li>`).join("")}</ul><p class="tiny muted">A gap means no evidence was found. Check the documents before deciding.</p></section>` : ""}
+        <details class="review-sec more"><summary><h3>Preferred criteria, weighted</h3><span class="tiny muted">${pref.reduce((s, x) => s + (x.s.pts || 0), 0)} of ${pref.reduce((s, x) => s + x.c.max, 0)} points · criteria ${mode === "recruitment" ? "CFS-2026-v2" : "RFP-014-v1"}</span></summary><ul class="crit-list">${pref.map((x) => critRow(x, true)).join("")}</ul></details>`}
+        <details class="review-sec more"><summary><h3>Documents</h3><span class="tiny muted">${item.docs.length} files</span></summary><ul class="doc-list" style="margin-top:8px">${item.docs.map((d) => `<li><span class="doc-ico" aria-hidden="true">${esc(d[1])}</span><a href="#admin-${esc(item.id)}" data-toast="In the live console this opens the document viewer." style="font-weight:500">${esc(d[0])}</a><span class="tiny muted" style="margin-left:auto">${esc(d[2])}</span></li>`).join("")}</ul></details>
+        <details class="review-sec more"><summary><h3>Audit trail</h3><span class="tiny muted">${item.audit.length + (decided ? 1 : 0)} events</span></summary><dl class="kv small" style="margin:10px 0 12px"><dt>Submitted</dt><dd class="num">${esc(item.submitted)}</dd><dt>Screened</dt><dd class="num">${esc((item.audit.find((x) => /analysis complete/i.test(x[2])) || item.audit[item.audit.length - 1])[0])}</dd><dt>Criteria</dt><dd>${mode === "recruitment" ? "CFS-2026-v2" : "RFP-014-v1"}</dd><dt>Model</dt><dd>screening-2026.09, logged</dd><dt>Reviewer</dt><dd>${esc(decided ? "You" : item.reviewer)}</dd></dl><ul class="audit">${item.audit.concat(decided ? [["2026-10-12 09:30", "You", `Decision recorded: ${decided}. Rationale: ${a.rationale || ""}`]] : []).map((x) => `<li><span class="t">${esc(x[0])}</span><span><span class="who">${esc(x[1])}</span> · ${esc(x[2])}</span></li>`).join("")}</ul></details>
       </div>
-      <aside class="side stack" style="gap:var(--s-4)">
-        <div class="decision"><p class="eyebrow brand">Human review</p>${decided ? `<p style="margin-top:8px"><span class="status ${statusChipFor(decided)}">${esc(decided)}</span></p><p class="small muted" style="margin-top:8px">Recorded by you with rationale. The ${mode === "recruitment" ? "applicant" : "vendor"} will be notified according to the published process.</p><button class="btn btn-secondary btn-sm" data-admin-undo="${esc(item.id)}" style="margin-top:10px">Reopen</button>` : item.score == null ? `<p class="small muted" style="margin-top:8px">Available once processing completes.</p>` : `<form data-form="decision" data-id="${esc(item.id)}" novalidate><p class="small muted" style="margin-top:6px">AI recommendation: <strong style="color:var(--fg)">${esc(recommendation)}</strong>. Your decision:</p><div class="opts" role="radiogroup" aria-label="Decision"><label><input type="radio" name="dec" value="Shortlisted"> Advance ${mode === "recruitment" ? "to interview" : "to financial opening"}</label><label><input type="radio" name="dec" value="On hold"> Hold</label><label><input type="radio" name="dec" value="Clarification requested"> Request clarification</label><label><input type="radio" name="dec" value="Not progressed"> Do not progress</label></div><div class="field" data-field="rationale"><label for="rationale">Rationale <span class="req" aria-hidden="true">*</span></label><textarea class="textarea" id="rationale" style="min-height:72px" placeholder="Required. Written to the audit log and used in feedback."></textarea><span class="err">Choose an outcome and write a rationale.</span></div><button class="btn btn-primary" type="submit" style="width:100%;margin-top:10px">Record decision</button></form>`}</div>
-        <div class="card"><p class="eyebrow brand">Traceability</p><dl class="kv small" style="margin-top:8px"><dt>Submitted</dt><dd class="num">${esc(item.submitted)}</dd><dt>Screened</dt><dd class="num">${esc((item.audit.find((x) => /analysis complete/i.test(x[2])) || item.audit[item.audit.length - 1])[0])}</dd><dt>Criteria</dt><dd>${mode === "recruitment" ? "CFS-2026-v2" : "RFP-014-v1"}</dd><dt>Model</dt><dd>screening-2026.09, logged</dd><dt>Reviewer</dt><dd>${esc(decided ? "You" : item.reviewer)}</dd><dt>Status</dt><dd><span class="status ${statusChipFor(decided || item.status)}">${esc(decided || item.status)}</span></dd></dl></div>
-        <div class="card"><p class="eyebrow brand">Documents (${item.docs.length})</p><ul class="doc-list" style="margin-top:8px">${item.docs.map((d) => `<li><span class="doc-ico" aria-hidden="true">${esc(d[1])}</span><a href="#admin-${esc(item.id)}" data-toast="In the live console this opens the document viewer." style="font-weight:500">${esc(d[0])}</a><span class="tiny muted" style="margin-left:auto">${esc(d[2])}</span></li>`).join("")}</ul></div>
+      <aside class="side">
+        <div class="decision"><p class="eyebrow brand">Human review</p><p class="advise">AI advises. A human decides.</p>${decided ? `<p style="margin-top:10px"><span class="status ${statusChipFor(decided)}">${esc(decided)}</span></p><p class="small muted" style="margin-top:8px">Recorded by you with rationale. The ${mode === "recruitment" ? "applicant" : "vendor"} will be notified according to the published process.</p><button class="btn btn-secondary btn-sm" data-admin-undo="${esc(item.id)}" style="margin-top:10px">Reopen</button>` : item.score == null ? `<p class="small muted" style="margin-top:8px">Available once processing completes.</p>` : `<form data-form="decision" data-id="${esc(item.id)}" novalidate><div class="rec"><span class="eyebrow">AI recommendation</span><strong>${esc(recommendation)}</strong></div><p class="eyebrow" style="margin-top:14px">Your decision</p><div class="opts" role="radiogroup" aria-label="Decision"><label><input type="radio" name="dec" value="Shortlisted"> Advance ${mode === "recruitment" ? "to interview" : "to financial opening"}</label><label><input type="radio" name="dec" value="On hold"> Hold</label><label><input type="radio" name="dec" value="Clarification requested"> Request clarification</label><label><input type="radio" name="dec" value="Not progressed"> Do not progress</label></div><div class="field" data-field="rationale"><label for="rationale">Rationale <span class="req" aria-hidden="true">*</span></label><textarea class="textarea" id="rationale" style="min-height:72px" placeholder="Required. Written to the audit log."></textarea><span class="err">Choose an outcome and write a rationale.</span></div><button class="btn btn-primary" type="submit" style="width:100%;margin-top:10px">Record decision</button></form>`}</div>
+        <p class="tiny muted" style="margin-top:12px">Scores are produced from extracted text only. Protected characteristics are never read or inferred. Prompt and model version are logged with every score.</p>
       </aside>`;
   };
+
   function statusChipFor(s) { return s === "Shortlisted" ? "good" : s === "Processing" || s === "Not progressed" ? "neutral" : s === "Clarification requested" || s === "On hold" ? "warn" : "brand"; }
 
   /* --- Contact --- */
@@ -776,7 +752,7 @@
       <header class="header"><div class="container">
         <a class="logo" href="#home" aria-label="FSD Ethiopia home"><img class="logo-img" src="img/logo.png" alt="FSD Ethiopia" width="714" height="490"></a>
         <nav class="nav" aria-label="Primary" id="primary-nav">${NAV.map((n) => `<a href="#${n[0]}" data-nav="${n[0]}">${esc(n[1])}</a>`).join("")}</nav>
-        <div class="header-actions"><button class="btn-search" data-open-search aria-label="Search the site"><span class="row" style="gap:8px">${ICON.search}<span class="lbl">Search the site…</span></span><kbd>/</kbd></button><button class="btn-menu" data-open-menu aria-label="Open menu" aria-expanded="false">${ICON.menu} Menu</button></div>
+        <div class="header-actions"><button class="btn-search" data-open-search aria-label="Search the site"><span class="row" style="gap:8px">${ICON.search}<span class="lbl">Search</span></span><kbd>/</kbd></button><button class="btn-menu" data-open-menu aria-label="Open menu" aria-expanded="false">${ICON.menu} Menu</button></div>
       </div></header>
       <main id="main" tabindex="-1"></main>
       <footer class="footer"><div class="container">
