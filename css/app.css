@@ -871,3 +871,6 @@ h2 { font-size: clamp(var(--fs-20), 2vw, var(--fs-24)); }
 @media (max-width: 800px) { .admin-grid { grid-template-columns: minmax(0, 1fr); } .q-item { margin: 0; } }
 .home-sec > *, .home-sec-body > *, .result-body > *, .review > *, .admin-grid > * { min-width: 0; }
 .chart, .chart svg { max-width: 100%; }
+
+/* programmatic focus target after navigation: no ring (screen readers still announce it) */
+h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
